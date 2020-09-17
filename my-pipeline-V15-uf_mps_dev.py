@@ -372,9 +372,6 @@ def flagresidual(myfile,myclipresid,myflagspw):
 		name=myfile+'temp.summary', action="apply", flagbackup=True,overwrite=True, writeflags=True)
 #
 
-
-	 
-
 def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty):
 	myref = myref
 	nscal = nloops # number of selfcal loops
