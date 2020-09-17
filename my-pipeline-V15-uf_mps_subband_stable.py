@@ -14,6 +14,14 @@
 #
 # Date: 7 Sep 2020
 # MPS: Added subband imaging routines 
+# Date 14 Sep 2020
+# MPS: Added a function to get flux density for a source at phase center of the last image
+# Date 15 Sep 2020
+# MPS: Overhaul of the bad channel flagging: 1. Removed the frequencies > 750 MHz 2. Split the RFI freq into 360-380 MHz and 486-493 MHz 
+# 3. Determine the lowest and highest channel corresponding to the frequencies for flagging instead of doing a channel by channel append
+# Date 16 Sep 2020
+# MPS: Modified the tclean call in the subband imaging function to change sidelobethreshold to 2.5 from 3. Also changed the tclean call to try and except to keep going
+# even if tclean fails for some reason
 ###### SET THE STAGE FOR DATA ANALYSIS #############################
 fromlta = False                               # If starting from lta file set it True. Provide the lta file name and check that the gvfits binaries are given properly.
 gvbinpath = ['./gvfits-binaries/listscan','./gvfits-binaries/gvfits']   # set the path to listscan and gvfits
@@ -136,7 +144,11 @@ def myvisstatampraw1(myfile,myfield,myspw,myant,mycorr,myscan):
 		correlation=mycorr,scan=myscan,array="",observation="",timeaverage=False,
 		timebin="0s",timespan="",maxuvwdistance=0.0,disableparallel=None,ddistart=None,
 		taql=None,monolithic_processing=None,intent="",reportingaxes="ddid")
-	mymean1 = mystat['DATA_DESC_ID=0']['mean']
+        if mystat is None:
+           mymean1 = 0.0
+        else:
+	   mymean1 = mystat['DATA_DESC_ID=0']['mean']
+
 	return mymean1
 
 def myvisstatampraw(myfile,myspw,myant,mycorr,myscan):
@@ -146,7 +158,11 @@ def myvisstatampraw(myfile,myspw,myant,mycorr,myscan):
 		correlation=mycorr,scan=myscan,array="",observation="",timeaverage=False,
 		timebin="0s",timespan="",maxuvwdistance=0.0,disableparallel=None,ddistart=None,
 		taql=None,monolithic_processing=None,intent="",reportingaxes="ddid")
-	mymean1 = mystat['DATA_DESC_ID=0']['mean']
+        if mystat is None:
+           mymean = 0.0
+        else:
+	   mymean1 = mystat['DATA_DESC_ID=0']['mean']
+
 	return mymean1
 
 
@@ -267,7 +283,7 @@ def mytcleansub(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj,mycha
 	tclean(vis=myfile,
        		imagename=myoutimg, selectdata= True, field='0', spw=spwopt, imsize=imsize, cell=cell, robust=0, weighting='briggs', 
        		specmode='mfs',	nterms=mynterms1, niter=myniter, usemask='auto-multithresh',
-		smallscalebias=0.6, threshold= mythresh, aterm =True, pblimit=-1,minbeamfrac=0.1,
+		smallscalebias=0.6, threshold= mythresh, aterm =True, pblimit=-1,minbeamfrac=0.1,sidelobethreshold=2.5,
 	        deconvolver='mtmfs', gridder='widefield', wprojplanes=mywproj, scales=[0,10,25],wbawp=False,
 		restoration = True, savemodel='modelcolumn', cyclefactor = 0.5, parallel=False,
        		interactive=False)
@@ -355,9 +371,6 @@ def flagresidual(myfile,myclipresid,myflagspw):
 	flagdata(vis=myfile,mode="summary",datacolumn="RESIDUAL_DATA", extendflags=False, 
 		name=myfile+'temp.summary', action="apply", flagbackup=True,overwrite=True, writeflags=True)
 #
-
-
-	 
 
 def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty):
 	myref = myref
@@ -539,7 +552,14 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
                 finalchans = getnchan(finalvis)
                 subchans = np.linspace(0,finalchans,nsub+1)
                 for j in range(nsub):
-                    myimg = mytcleansub(finalvis,myniter,mythresh,j,mycellsize,myimagesize,mynterms2,mywproj1,subchans,finalchans,nsub)       
+                    try:
+                        myimg = mytcleansub(finalvis,myniter,mythresh,j,mycellsize,myimagesize,mynterms2,mywproj1,subchans,finalchans,nsub)
+                        myimgflx = myimg+'.image.tt0'
+                        getfluxdensity(myimgflx,myimsize)
+                    except:
+                        print "Failed to make image for subband "+str(j)
+                        pass
+                       
                 print 'Subband images are ready'
 	return myfile, mygt, myimages
 
@@ -550,6 +570,32 @@ def myflagsum(myfile,myfields):
 		flagpercentage = 100.0 * flagsum['field'][src]['flagged'] / flagsum['field'][src]['total']
 #		print("\n %2.1f%% of the source are flagged.\n" % (100.0 * flagsum['field'][src]['flagged'] / flagsum['field'][src]['total']))
 	return flagpercentage
+
+def getfluxdensity(myimg,myimsize):
+    ''' Get the center of the image and set a 20*20 pixel box for getting the flux density '''
+    mycent = myimsize[0]/2
+    myblc = mycent - 10
+    mytrc = mycent + 10
+    box = str(myblc)+","+str(myblc)+","+str(mytrc)+","+str(mytrc)
+    imcalcs = imfit(imagename=myimg,box=box)
+    integ_flux = imcalcs['results']['component0']['flux']['value'][0]*1000
+    integ_flux_err = imcalcs['results']['component0']['flux']['error'][0]*1000
+    obs_freq = imcalcs['results']['component0']['spectrum']['frequency']['m0']['value']*1000
+    outstr = "[RES] Integrated Flux density is: "+str(integ_flux)+" +/- "+str(integ_flux_err)+" mJy and"
+    outstr1 = "Frequency is: "+str(obs_freq)+" MHz"
+    print outstr,outstr1
+
+def closest_chan(freq,freqarr):
+    ''' Return the closest channel number corresponding to freq from freqarr '''
+    diff = 1E20
+    chan = 0
+    for i in range(len(freqarr)):
+        rundiff = abs(freq - freqarr[i])
+        if rundiff < diff:
+           diff = rundiff
+           chan = i
+    if diff != 1E20:       
+       return chan
 
 #############End of functions##############################################################################
 
@@ -707,27 +753,56 @@ if fromms == True:
 # execute the flagging commands accumulated in cmds
 		print mycmds
 		if flagbadants==True:
+                   if mycmds != []:
 			flagdata(vis=myfile1,mode='list', inpfile=mycmds)	
 ######### Bad channel flagging for known persistent RFI.
 	if flagbadfreq==True:
 		findbadchans = True
 	if findbadchans ==True:
-		rfifreqall =[0.36E09,0.3796E09,0.486E09,0.49355E09,0.8808E09,0.885596E09,0.7646E09,0.769092E09] # always bad
+#		rfifreqall =[0.36E09,0.38E09,0.486E09,0.49355E09,0.8808E09,0.885596E09,0.7646E09,0.769092E09] # always bad
+		rfifreqlow1 = 0.360E09
+                rfifreqhi1 = 0.380E09
+		rfifreqlow2 = 0.486E09
+                rfifreqhi2 = 0.494E09
 		myfreqs =  freq_info(myfile1)
-		mybadchans=[]
-		for j in range(0,len(rfifreqall)-1):
-			if rfifreqall[j] > min(myfreqs) and rfifreqall[j] <max(myfreqs):
-				for i in range(0,len(myfreqs)):
-					if (myfreqs[i] > rfifreqall[j] and myfreqs[i] < rfifreqall[j+1]): #(myfreqs[i] > 0.486E09 and myfreqs[i] < 0.49355E09):
-						mybadchans.append(str(i))
-		mychanflag = str(';'.join(mybadchans))
-		if mybadchans!=[]:
+                lowchan1 = closest_chan(rfifreqlow1,myfreqs)
+                hichan1 = closest_chan(rfifreqhi1,myfreqs)
+                lowchan2 = closest_chan(rfifreqlow2,myfreqs)
+                hichan2 = closest_chan(rfifreqhi2,myfreqs)
+                if lowchan1 != hichan1:
+                   if lowchan1 < hichan1:
+                      mychanflag = '0:'+str(lowchan1)+'~'+str(hichan1)
+                   else:
+                      mychanflag = '0:'+str(hichan1)+'~'+str(lowchan1)
+                   print mychanflag
+                   myflgcmd = "mode='manual' spw='%s'" % (mychanflag)
+                   print myflgcmd
+                   if flagbadfreq==True:
+                      flagdata(vis=myfile1,mode='list', inpfile=[myflgcmd])
+                if lowchan2 != hichan2:
+                   if lowchan2 < hichan2:
+                      mychanflag = '0:'+str(lowchan2)+'~'+str(hichan2)
+                   else:
+                      mychanflag = '0:'+str(hichan2)+'~'+str(lowchan2)
+                   print mychanflag
+                   myflgcmd = "mode='manual' spw='%s'" % (mychanflag)
+                   print myflgcmd
+                   if flagbadfreq==True:
+                      flagdata(vis=myfile1,mode='list', inpfile=[myflgcmd])
+#		mybadchans=[]
+#		for j in range(0,len(rfifreqall)-1):
+#			if rfifreqall[j] > min(myfreqs) and rfifreqall[j] <max(myfreqs):
+#				for i in range(0,len(myfreqs)):
+#					if (myfreqs[i] > rfifreqall[j] and myfreqs[i] < rfifreqall[j+1]): #(myfreqs[i] > 0.486E09 and myfreqs[i] < 0.49355E09):
+#						mybadchans.append(str(i))
+#		mychanflag = str(';'.join(mybadchans))
+#		if mybadchans!=[]:
 #			print mychanflag
-			myflgcmd = "mode='manual' spw='0:%s'" % (mychanflag)
-			if flagbadfreq==True:
-				flagdata(vis=myfile1,mode='list', inpfile=[myflgcmd])
-		else:
-			print "No bad frequencies found in the range."
+#			myflgcmd = "mode='manual' spw='0:%s'" % (mychanflag)
+#			if flagbadfreq==True:
+#				flagdata(vis=myfile1,mode='list', inpfile=[myflgcmd])
+#		else:
+#			print "No bad frequencies found in the range."
 
 #if doinitcal==True:
 #	print "After initial flagging:"
