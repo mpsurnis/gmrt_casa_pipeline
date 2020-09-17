@@ -159,7 +159,7 @@ def myvisstatampraw(myfile,myspw,myant,mycorr,myscan):
 		timebin="0s",timespan="",maxuvwdistance=0.0,disableparallel=None,ddistart=None,
 		taql=None,monolithic_processing=None,intent="",reportingaxes="ddid")
         if mystat is None:
-           mymean = 0.0
+           mymean1 = 0.0
         else:
 	   mymean1 = mystat['DATA_DESC_ID=0']['mean']
 
