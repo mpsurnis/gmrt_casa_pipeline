@@ -47,7 +47,7 @@ makedirty = False                             # True only if you want to make a 
 doselfcal = True                              # True if selfcal loop should be run: set inputs below regarding how many iterations you want.
 usetclean = True                              # True if you want to use tclean (recommended); False will use clean.
 dosubband = True                              # Added by MPS on 7 Sep 2020 to do subband imaging.
-nsub = 8                                      # Number fo subbands to make images over
+nsub = 4                                      # Number fo subbands to make images over
 ####################################################################
 ###### INPUTS ######################################################
 ltafile =''                                   # Provide the name of the lta file
