@@ -245,7 +245,8 @@ def mytclean(myfile,myniter,mythresh,srno,cell,imsize, mynterms1,mywproj):    # 
 	if myniter==0:
 		myoutimg = 'dirty-img'
 	else:
-		myoutimg = 'selfcal'+'img'+str(srno)
+                templist = getfields(myfile)
+		myoutimg = templist[0]+'selfcal'+'img'+str(srno)
 	default(tclean)
 	tclean(vis=myfile,
        		imagename=myoutimg, selectdata= True, field='0', spw='0', imsize=imsize, cell=cell, robust=0, weighting='briggs', 
@@ -268,7 +269,8 @@ def mytclean(myfile,myniter,mythresh,srno,cell,imsize, mynterms1,mywproj):    # 
 	return myoutimg
 
 def mytcleansub(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj,mychans,finalchan,nsub):    # you may change the multi-scale inputs as per your field
-	myoutimg = 'selfcal'+'img'+'sub'+str(srno)
+        templist = getfields(myfile)
+	myoutimg = templist[0]+'selfcal'+'img'+'sub'+str(srno)
         print myoutimg
         if srno == 0:
            lowchan = int(mychans[srno])
