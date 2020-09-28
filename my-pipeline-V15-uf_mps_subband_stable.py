@@ -72,17 +72,17 @@ clipresid=[0.0,10.0]                          # 10 times the rms for single chan
 mywidth2 = 20                                 # number of channels to average - choose aptly to avoid bandwidth smearing.
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Inputs for imaging and self-calibration : You will need to change relevant advanced controls if you change the values here.
-scaloops = 8                                   # Total number of self-cal loops (including both phase-only and amp-ph)
+scaloops = 5                                   # Total number of self-cal loops (including both phase-only and amp-ph)
 mythresholds = 0.5                             # A starting thereshold- will reduce with scal iterations.              
 mypcaloops = 4                                 # Number of p-only selfcal loops; should be <= scaloops. The remaning loops will and a&p self-cal.
-mycell = ['1.0arcsec']                         # Set the cellsize: for 610 MHz 0.5 or 1.0 arcsec, for 325 MHz 1.0 or 2.0 arcsec, 0.25 or 0.5 arcsec for 1.4 GHz will work.
+mycell = ['0.5arcsec']                         # Set the cellsize: for 610 MHz 0.5 or 1.0 arcsec, for 325 MHz 1.0 or 2.0 arcsec, 0.25 or 0.5 arcsec for 1.4 GHz will work.
 myimsize = [9000]                              # Set the size of the image in pixel units. Should cover the primary beam.
 ##################################################################
 # For advanced control, you may modify the following inputs to the tasks. However you could go ahead without modifying these.
 ##################################################################
 mynterms = 2                                   # This is the nterms used in tclean. For uGMRT this needs to be 2 at least. A larger value implies very slow imaging.
 mywproj2 = -1                                  # Number of wprojection planes- leave it to -1 so that it is determined internally in tclean
-mysolint2 = ['8.0min','4.0min','2.0min','1.0min','8.0min','4.0min','2.0min','1.0min']   # Solint used for self-cal: provide solints for each self-cal iteration : edit if scaloops changed. 
+mysolint2 = ['8.0min','4.0min','2.0min','1.0min','1.0min']   # Solint used for self-cal: provide solints for each self-cal iteration : edit if scaloops changed. 
 uvrascal='>2klambda'                                    # uvrange cutoff used in self-calibration 
 # If you want to process only calibrator sources, only then set the following to False; imaging of calibrators is not included so only steps till redocalibration will work if False.
 #######################################################################################################################
