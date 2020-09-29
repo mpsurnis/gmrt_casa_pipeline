@@ -36,7 +36,7 @@ There are many steps in using the pipeline on the data. Following is an example 
 7. Now, we need to change a few parameters for the pipeline to work properly. They are as follows:
    a. scaloops (line 75) which defaults to 5. That is usually enough. This is 4 phase only self cals plus one amplitude and phase self cal.
    b. mycell (line 78) which defaults to 0.5 arcsec. That is the value for band4. For band3, change it to 1.0 arcsec. This is the value of the cell size for re-gridding the visibilities.
-   c. myimsize (line 79) which defaults to 9000 pixels. That is the value for band4. For band3, change it to 5000. This is the final image size in pixels (square)
+   c. myimsize (line 79) which defaults to 5000 pixels. This is the final image size in pixels (square). This corresponds to a field size of about 0.7 deg at band4 and about 1.3 deg at band3.
    d. uvrascal (line 86) which defaults to >2klambda. That is the value for band4. For band3, change it to >1klambda. This is a parameter to exclude the central square antennae while self-calibrating.
 
 8. Now, we can run the pipeline. Just make sure that TEST.FITS, vla-cals.list and my-pipeline-V15-uf_mps_subband_stable.py are in your current working directory. To run the pipeline, just type:
