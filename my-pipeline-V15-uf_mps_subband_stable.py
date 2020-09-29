@@ -76,7 +76,7 @@ scaloops = 5                                   # Total number of self-cal loops 
 mythresholds = 0.5                             # A starting thereshold- will reduce with scal iterations.              
 mypcaloops = 4                                 # Number of p-only selfcal loops; should be <= scaloops. The remaning loops will and a&p self-cal.
 mycell = ['0.5arcsec']                         # Set the cellsize: for 610 MHz 0.5 or 1.0 arcsec, for 325 MHz 1.0 or 2.0 arcsec, 0.25 or 0.5 arcsec for 1.4 GHz will work.
-myimsize = [9000]                              # Set the size of the image in pixel units. Should cover the primary beam.
+myimsize = [5000]                              # Set the size of the image in pixel units. Should cover the primary beam.
 ##################################################################
 # For advanced control, you may modify the following inputs to the tasks. However you could go ahead without modifying these.
 ##################################################################
@@ -245,7 +245,8 @@ def mytclean(myfile,myniter,mythresh,srno,cell,imsize, mynterms1,mywproj):    # 
 	if myniter==0:
 		myoutimg = 'dirty-img'
 	else:
-		myoutimg = 'selfcal'+'img'+str(srno)
+                templist = getfields(myfile)
+		myoutimg = templist[0]+'selfcal'+'img'+str(srno)
 	default(tclean)
 	tclean(vis=myfile,
        		imagename=myoutimg, selectdata= True, field='0', spw='0', imsize=imsize, cell=cell, robust=0, weighting='briggs', 
@@ -268,7 +269,8 @@ def mytclean(myfile,myniter,mythresh,srno,cell,imsize, mynterms1,mywproj):    # 
 	return myoutimg
 
 def mytcleansub(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj,mychans,finalchan,nsub):    # you may change the multi-scale inputs as per your field
-	myoutimg = 'selfcal'+'img'+'sub'+str(srno)
+        templist = getfields(myfile)
+	myoutimg = templist[0]+'selfcal'+'img'+'sub'+str(srno)
         print myoutimg
         if srno == 0:
            lowchan = int(mychans[srno])
