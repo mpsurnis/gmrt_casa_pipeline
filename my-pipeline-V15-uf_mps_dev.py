@@ -76,7 +76,7 @@ scaloops = 5                                   # Total number of self-cal loops 
 mythresholds = 0.5                             # A starting thereshold- will reduce with scal iterations.              
 mypcaloops = 4                                 # Number of p-only selfcal loops; should be <= scaloops. The remaning loops will and a&p self-cal.
 mycell = ['0.5arcsec']                         # Set the cellsize: for 610 MHz 0.5 or 1.0 arcsec, for 325 MHz 1.0 or 2.0 arcsec, 0.25 or 0.5 arcsec for 1.4 GHz will work.
-myimsize = [9000]                              # Set the size of the image in pixel units. Should cover the primary beam.
+myimsize = [5000]                              # Set the size of the image in pixel units. Should cover the primary beam.
 ##################################################################
 # For advanced control, you may modify the following inputs to the tasks. However you could go ahead without modifying these.
 ##################################################################
