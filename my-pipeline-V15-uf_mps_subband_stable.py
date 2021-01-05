@@ -76,7 +76,7 @@ scaloops = 5                                   # Total number of self-cal loops 
 mythresholds = 0.5                             # A starting thereshold- will reduce with scal iterations.              
 mypcaloops = 4                                 # Number of p-only selfcal loops; should be <= scaloops. The remaning loops will and a&p self-cal.
 mycell = ['0.5arcsec']                         # Set the cellsize: for 610 MHz 0.5 or 1.0 arcsec, for 325 MHz 1.0 or 2.0 arcsec, 0.25 or 0.5 arcsec for 1.4 GHz will work.
-myimsize = [5000]                              # Set the size of the image in pixel units. Should cover the primary beam.
+myimsize = [9000]                              # Set the size of the image in pixel units. Should cover the primary beam.
 ##################################################################
 # For advanced control, you may modify the following inputs to the tasks. However you could go ahead without modifying these.
 ##################################################################
@@ -394,6 +394,8 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 			myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 		else:
 			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                        myimgflx = myimg+'.image.tt0'
+                        getfluxdensity(myimgflx,myimagesize)
 		exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
 	else:
 		for i in range(0,nscal+1): # plan 4 P and 4AP iterations
@@ -407,6 +409,8 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                                                myimgflx = myimg+'.image.tt0'
+                                                getfluxdensity(myimgflx,myimagesize)
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 			else:
 				myniter=int(myniterstart*2**i) #myniterstart*(2**i)  # niter is doubled with every iteration int(startniter*2**count)
@@ -422,6 +426,8 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                                                myimgflx = myimg+'.image.tt0'
+                                                getfluxdensity(myimgflx,myimagesize)
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 					myimages.append(myimg)	# list of all the images created so far
 					flagresidual(myfile[i],clipresid,'')
@@ -442,6 +448,8 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                                                myimgflx = myimg+'.image.tt0'
+                                                getfluxdensity(myimgflx,myimagesize)
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 					myimages.append(myimg)	# list of all the images created so far
 					flagresidual(myfile1,clipresid,'')
@@ -481,6 +489,8 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 			myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 		else:
 			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                        myimgflx = myimg+'.image.tt0'
+                        getfluxdensity(myimgflx,myimagesize)
 		exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
 	else:
 		for i in range(0,nscal+1): # plan 4 P and 4AP iterations
@@ -494,6 +504,8 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                                                myimgflx = myimg+'.image.tt0'
+                                                getfluxdensity(myimgflx,myimagesize)
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 			else:
 				myniter=int(myniterstart*2**i) #myniterstart*(2**i)  # niter is doubled with every iteration int(startniter*2**count)
@@ -509,6 +521,8 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                                                myimgflx = myimg+'.image.tt0'
+                                                getfluxdensity(myimgflx,myimagesize)
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 					myimages.append(myimg)	# list of all the images created so far
 					flagresidual(myfile[i],clipresid,'')
@@ -529,6 +543,8 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                                                myimgflx = myimg+'.image.tt0'
+                                                getfluxdensity(myimgflx,myimagesize)
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 					myimages.append(myimg)	# list of all the images created so far
 					flagresidual(myfile1,clipresid,'')
