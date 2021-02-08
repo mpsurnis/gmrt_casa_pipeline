@@ -716,7 +716,7 @@ if fromms == True:
 		gainspw2 = ''   # central good channels after split file for self-cal	
 # fix targets
 	myfields = getfields(myfile1)
-	stdcals = ['3C48','3C147','3C286','0542+498','1331+305','0137+331']
+	stdcals = ['3C48','3C147','3C286','0542+498','1331+305','0137+331','3c48','3c147','3c286']
 	vlacals = np.loadtxt('./vla-cals.list',dtype='string')
 	myampcals =[]
 	mypcals=[]
