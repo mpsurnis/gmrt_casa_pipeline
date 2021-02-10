@@ -25,18 +25,18 @@
 ###### SET THE STAGE FOR DATA ANALYSIS #############################
 fromlta = False                               # If starting from lta file set it True. Provide the lta file name and check that the gvfits binaries are given properly.
 gvbinpath = ['./gvfits-binaries/listscan','./gvfits-binaries/gvfits']   # set the path to listscan and gvfits
-fromraw = True                               # True if starting from FITS data. Otherwise keep it False.
-fromms = True                                # True If working with multi-source MS file.
+fromraw = False                               # True if starting from FITS data. Otherwise keep it False.
+fromms = False                                # True If working with multi-source MS file.
 ######## find bad ants and freqs
-findbadants = True                           # find bad antennas when True
-flagbadants= True                            # find and flag bad antennas when True
-findbadchans = True                          # find bad channels within known RFI affected freq ranges when True
-flagbadfreq= True                            # find and flag bad channels within known RFI affected freq ranges when True
+findbadants = False                           # find bad antennas when True
+flagbadants= False                            # find and flag bad antennas when True
+findbadchans = False                          # find bad channels within known RFI affected freq ranges when True
+flagbadfreq= False                            # find and flag bad channels within known RFI affected freq ranges when True
 ###################
-myflaginit = True                             # True to flag first channel, quack, initial clips
-doinitcal = True                              # True to calibrate data
-mydoflag = True                               # True to flag on the calibrated data
-redocal = True                                # True to redo calibration - recommended
+myflaginit = False                             # True to flag first channel, quack, initial clips
+doinitcal = False                              # True to calibrate data
+mydoflag = False                               # True to flag on the calibrated data
+redocal = False                                # True to redo calibration - recommended
 ##################
 dosplit = True                                # True to split calibrated data on target source
 mysplitflag = True                            # True to flag on the target source
@@ -317,7 +317,8 @@ def myonlyclean(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj):
 def mysplit(myfile,srno):
 	default(mstransform)
 	mstransform(vis=myfile, field='0', spw='0', datacolumn='corrected', outputvis='vis-selfcal'+str(srno)+'.ms')
-	myoutvis='vis-selfcal'+str(srno)+'.ms'
+        templist = getfields(myfile)
+	myoutvis=templist[0]+'vis-selfcal'+str(srno)+'.ms'
 	return myoutvis
 
 
@@ -345,7 +346,8 @@ def mygaincal_ap(myfile,myref,mygtable,srno,pap,mysolint,myuvrascal,mygainspw):
 		uvrange=myuvrascal, solint = mysol, refant = myref, minsnr = 2.0, gaintype = 'G',
 		solnorm= mysolnorm, calmode = mycalmode, gaintable = [], interp = ['nearest,nearestflag', 'nearest,nearestflag' ], 
 		parang = True )
-	mycal = str(pap)+str(srno)+'.GT'
+        templist = getfields(myfile)
+	mycal = templist[0]+str(pap)+str(srno)+'.GT'
 	return mycal
 
 
@@ -395,7 +397,10 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 		else:
 			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                         myimgflx = myimg+'.image.tt0'
-                        getfluxdensity(myimgflx,myimagesize)
+                        try:
+                            getfluxdensity(myimgflx,myimagesize)
+                        except:
+                            pass
 		exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
 	else:
 		for i in range(0,nscal+1): # plan 4 P and 4AP iterations
@@ -410,7 +415,10 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
-                                                getfluxdensity(myimgflx,myimagesize)
+                                                try:
+                                                    getfluxdensity(myimgflx,myimagesize)
+                                                except:
+                                                    pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 			else:
 				myniter=int(myniterstart*2**i) #myniterstart*(2**i)  # niter is doubled with every iteration int(startniter*2**count)
@@ -427,7 +435,10 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
-                                                getfluxdensity(myimgflx,myimagesize)
+                                                try:
+                                                    getfluxdensity(myimgflx,myimagesize)
+                                                except:
+                                                    pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 					myimages.append(myimg)	# list of all the images created so far
 					flagresidual(myfile[i],clipresid,'')
@@ -449,7 +460,10 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
-                                                getfluxdensity(myimgflx,myimagesize)
+                                                try:
+                                                    getfluxdensity(myimgflx,myimagesize)
+                                                except:
+                                                    pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 					myimages.append(myimg)	# list of all the images created so far
 					flagresidual(myfile1,clipresid,'')
@@ -490,7 +504,10 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 		else:
 			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                         myimgflx = myimg+'.image.tt0'
-                        getfluxdensity(myimgflx,myimagesize)
+                        try:
+                            getfluxdensity(myimgflx,myimagesize)
+                        except:
+                            pass
 		exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
 	else:
 		for i in range(0,nscal+1): # plan 4 P and 4AP iterations
@@ -505,7 +522,10 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
-                                                getfluxdensity(myimgflx,myimagesize)
+                                                try:
+                                                    getfluxdensity(myimgflx,myimagesize)
+                                                except:
+                                                    pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 			else:
 				myniter=int(myniterstart*2**i) #myniterstart*(2**i)  # niter is doubled with every iteration int(startniter*2**count)
@@ -522,7 +542,10 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
-                                                getfluxdensity(myimgflx,myimagesize)
+                                                try:
+                                                    getfluxdensity(myimgflx,myimagesize)
+                                                except:
+                                                    pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 					myimages.append(myimg)	# list of all the images created so far
 					flagresidual(myfile[i],clipresid,'')
@@ -544,7 +567,10 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					else:
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
-                                                getfluxdensity(myimgflx,myimagesize)
+                                                try:
+                                                    getfluxdensity(myimgflx,myimagesize)
+                                                except:
+                                                    pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
 					myimages.append(myimg)	# list of all the images created so far
 					flagresidual(myfile1,clipresid,'')
@@ -573,7 +599,10 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
                     try:
                         myimg = mytcleansub(finalvis,myniter,mythresh,j,mycellsize,myimagesize,mynterms2,mywproj1,subchans,finalchans,nsub)
                         myimgflx = myimg+'.image.tt0'
-                        getfluxdensity(myimgflx,myimsize)
+                        try:
+                            getfluxdensity(myimgflx,myimsize)
+                        except:
+                            pass
                     except:
                         print "Failed to make image for subband "+str(j)
                         pass
@@ -689,7 +718,7 @@ if fromms == True:
 		gainspw2 = ''   # central good channels after split file for self-cal	
 # fix targets
 	myfields = getfields(myfile1)
-	stdcals = ['3C48','3C147','3C286','0542+498','1331+305','0137+331']
+	stdcals = ['3C48','3C147','3C286','0542+498','1331+305','0137+331','3c48','3c147','3c286']
 	vlacals = np.loadtxt('./vla-cals.list',dtype='string')
 	myampcals =[]
 	mypcals=[]
@@ -1124,7 +1153,7 @@ if dosplit == True:
 	casalog.filter('INFO')
 # fix targets
 	myfields = getfields(myfile1)
-	stdcals = ['3C48','3C147','3C286','0542+498','1331+305','0137+331']
+	stdcals = ['3C48','3C147','3C286','0542+498','1331+305','0137+331','3c48','3c147','3c286']
 	vlacals = np.loadtxt('./vla-cals.list',dtype='string')
 	myampcals =[]
 	mypcals=[]
@@ -1136,15 +1165,17 @@ if dosplit == True:
 			mypcals.append(myfields[i])
 		else:
 			mytargets.append(myfields[i])
-	for i in range(0,len(mytargets)):
-		os.system('rm -rf '+mytargets[i]+'split.ms')
-		mysplitfile = mysplitinit(myfile1,mytargets[i],gainspw,1)
+	#for i in range(0,len(mytargets)):
+		#os.system('rm -rf '+mytargets[i]+'split.ms')
+		#mysplitfile = mysplitinit(myfile1,mytargets[i],gainspw,1)
 
 #############################################################
 # Flagging on split file
 #############################################################
 
 if mysplitflag == True:
+   for i in range(0,len(mytargets)):
+        mysplitfile = mytargets[i]+'split.ms'
 	myantselect =''
 	mytfcrop(mysplitfile,'',myantselect,8.0,8.0,'DATA','')
 	mylist = ['C00&C01', 'C00&C02', 'C00&C03', 'C00&C04', 'C00&C05', 'C00&C06', 'C00&C08', 'C00&C09', 'C00&C10', 'C00&C11', 'C00&C12', 'C00&C13', 'C00&C14', 'C01&C02', 'C01&C03', 'C01&C04', 				'C01&C05', 'C01&C06', 'C01&C08', 'C01&C09', 'C01&C10', 'C01&C11', 'C01&C12', 'C01&C13', 'C01&C14', 'C02&C03', 'C02&C04', 'C02&C05', 'C02&C06', 'C02&C08', 'C02&C09', 'C02&C10', 			'C02&C11', 'C02&C12', 'C02&C13', 'C02&C14', 'C03&C04', 'C03&C05', 'C03&C06', 'C03&C08', 'C03&C09', 'C03&C10', 'C03&C11', 'C03&C12', 'C03&C13', 'C03&C14', 'C04&C05', 'C04&C06', 			'C04&C08', 'C04&C09', 'C04&C10', 'C04&C11', 'C04&C12', 'C04&C13', 'C04&C14', 'C05&C06', 'C05&C08', 'C05&C09', 'C05&C10', 'C05&C11', 'C05&C12', 'C05&C13', 'C05&C14', 'C06&C08', 			'C06&C09', 'C06&C10', 'C06&C11', 'C06&C12', 'C06&C13', 'C06&C14', 'C08&C09', 'C08&C10', 'C08&C11', 'C08&C12', 'C08&C13', 'C08&C14', 'C09&C10', 'C09&C11', 'C09&C12', 'C09&C13', 			'C09&C14', 'C10&C11', 'C10&C12', 'C10&C13', 'C10&C14', 'C11&C12', 'C11&C13', 'C11&C14', 'C12&C13', 'C12&C14', 'C13&C14']
@@ -1168,11 +1199,15 @@ if mysplitflag == True:
 #############################################################
 
 if dosplitavg == True:
+        for i in range(0,len(mytargets)):
+            mysplitfile = mytargets[i]+'split.ms'
 #	os.system('rm -rf '+mytargets[i]+'avg-split.ms')
-	mysplitavgfile = mysplitavg(mysplitfile,'','',mywidth2)
+	    mysplitavgfile = mysplitavg(mysplitfile,'','',mywidth2)
 
 
 if doflagavg == True:
+   for i in range(0,len(mytargets)):
+        mysplitavgfile = mytargets[i]+'avg-split.ms'
 	mylist =['C00&E02', 'C00&E03', 'C00&E04', 'C00&E05', 'C00&E06', 'C00&S01', 'C00&S02', 'C00&S03', 'C00&S04', 'C00&S06', 'C00&W01', 'C00&W02', 'C00&W03', 'C00&W04', 'C00&W05', 'C00&W06', 'C01&E02', 'C01&E03', 'C01&E04', 'C01&E05', 'C01&E06', 'C01&S01', 'C01&S02', 'C01&S03', 'C01&S04', 'C01&S06', 'C01&W01', 'C01&W02', 'C01&W03', 'C01&W04', 'C01&W05', 'C01&W06', 'C02&E02', 'C02&E03', 'C02&E04', 'C02&E05', 'C02&E06', 'C02&S01', 'C02&S02', 'C02&S03', 'C02&S04', 'C02&S06', 'C02&W01', 'C02&W02', 'C02&W03', 'C02&W04', 'C02&W05', 'C02&W06', 'C03&E02', 'C03&E03', 'C03&E04', 'C03&E05', 'C03&E06', 'C03&S01', 'C03&S02', 'C03&S03', 'C03&S04', 'C03&S06', 'C03&W01', 'C03&W02', 'C03&W03', 'C03&W04', 'C03&W05', 'C03&W06', 'C04&E02', 'C04&E03', 'C04&E04', 'C04&E05', 'C04&E06', 'C04&S01', 'C04&S02', 'C04&S03', 'C04&S04', 'C04&S06', 'C04&W01', 'C04&W02', 'C04&W03', 'C04&W04', 'C04&W05', 'C04&W06', 'C05&E02', 'C05&E03', 'C05&E04', 'C05&E05', 'C05&E06', 'C05&S01', 'C05&S02', 'C05&S03', 'C05&S04', 'C05&S06', 'C05&W01', 'C05&W02', 'C05&W03', 'C05&W04', 'C05&W05', 'C05&W06', 'C06&E02', 'C06&E03', 'C06&E04', 'C06&E05', 'C06&E06', 'C06&S01', 'C06&S02', 'C06&S03', 'C06&S04', 'C06&S06', 'C06&W01', 'C06&W02', 'C06&W03', 'C06&W04', 'C06&W05', 'C06&W06', 'C08&E02', 'C08&E03', 'C08&E04', 'C08&E05', 'C08&E06', 'C08&S01', 'C08&S02', 'C08&S03', 'C08&S04', 'C08&S06', 'C08&W01', 'C08&W02', 'C08&W03', 'C08&W04', 'C08&W05', 'C08&W06', 'C09&E02', 'C09&E03', 'C09&E04', 'C09&E05', 'C09&E06', 'C09&S01', 'C09&S02', 'C09&S03', 'C09&S04', 'C09&S06', 'C09&W01', 'C09&W02', 'C09&W03', 'C09&W04', 'C09&W05', 'C09&W06', 'C10&E02', 'C10&E03', 'C10&E04', 'C10&E05', 'C10&E06', 'C10&S01', 'C10&S02', 'C10&S03', 'C10&S04', 'C10&S06', 'C10&W01', 'C10&W02', 'C10&W03', 'C10&W04', 'C10&W05', 'C10&W06', 'C11&E02', 'C11&E03', 'C11&E04', 'C11&E05', 'C11&E06', 'C11&S01', 'C11&S02', 'C11&S03', 'C11&S04', 'C11&S06', 'C11&W01', 'C11&W02', 'C11&W03', 'C11&W04', 'C11&W05', 'C11&W06', 'C12&E02', 'C12&E03', 'C12&E04', 'C12&E05', 'C12&E06', 'C12&S01', 'C12&S02', 'C12&S03', 'C12&S04', 'C12&S06', 'C12&W01', 'C12&W02', 'C12&W03', 'C12&W04', 'C12&W05', 'C12&W06', 'C13&E02', 'C13&E03', 'C13&E04', 'C13&E05', 'C13&E06', 'C13&S01', 'C13&S02', 'C13&S03', 'C13&S04', 'C13&S06', 'C13&W01', 'C13&W02', 'C13&W03', 'C13&W04', 'C13&W05', 'C13&W06', 'C14&E02', 'C14&E03', 'C14&E04', 'C14&E05', 'C14&E06', 'C14&S01', 'C14&S02', 'C14&S03', 'C14&S04', 'C14&S06', 'C14&W01', 'C14&W02', 'C14&W03', 'C14&W04', 'C14&W05', 'C14&W06', 'E02&E03', 'E02&E04', 'E02&E05', 'E02&E06', 'E02&S01', 'E02&S02', 'E02&S03', 'E02&S04', 'E02&S06', 'E02&W01', 'E02&W02', 'E02&W03', 'E02&W04', 'E02&W05', 'E02&W06', 'E03&E02', 'E03&E04', 'E03&E05', 'E03&E06', 'E03&S01', 'E03&S02', 'E03&S03', 'E03&S04', 'E03&S06', 'E03&W01', 'E03&W02', 'E03&W03', 'E03&W04', 'E03&W05', 'E03&W06', 'E04&E02', 'E04&E03', 'E04&E05', 'E04&E06', 'E04&S01', 'E04&S02', 'E04&S03', 'E04&S04', 'E04&S06', 'E04&W01', 'E04&W02', 'E04&W03', 'E04&W04', 'E04&W05', 'E04&W06', 'E05&E02', 'E05&E03', 'E05&E04', 'E05&E06', 'E05&S01', 'E05&S02', 'E05&S03', 'E05&S04', 'E05&S06', 'E05&W01', 'E05&W02', 'E05&W03', 'E05&W04', 'E05&W05', 'E05&W06', 'E06&E02', 'E06&E03', 'E06&E04', 'E06&E05', 'E06&S01', 'E06&S02', 'E06&S03', 'E06&S04', 'E06&S06', 'E06&W01', 'E06&W02', 'E06&W03', 'E06&W04', 'E06&W05', 'E06&W06', 'S01&E02', 'S01&E03', 'S01&E04', 'S01&E05', 'S01&E06', 'S01&S02', 'S01&S03', 'S01&S04', 'S01&S06', 'S01&W01', 'S01&W02', 'S01&W03', 'S01&W04', 'S01&W05', 'S01&W06', 'S02&E02', 'S02&E03', 'S02&E04', 'S02&E05', 'S02&E06', 'S02&S01', 'S02&S03', 'S02&S04', 'S02&S06', 'S02&W01', 'S02&W02', 'S02&W03', 'S02&W04', 'S02&W05', 'S02&W06', 'S03&E02', 'S03&E03', 'S03&E04', 'S03&E05', 'S03&E06', 'S03&S01', 'S03&S02', 'S03&S04', 'S03&S06', 'S03&W01', 'S03&W02', 'S03&W03', 'S03&W04', 'S03&W05', 'S03&W06', 'S04&E02', 'S04&E03', 'S04&E04', 'S04&E05', 'S04&E06', 'S04&S01', 'S04&S02', 'S04&S03', 'S04&S06', 'S04&W01', 'S04&W02', 'S04&W03', 'S04&W04', 'S04&W05', 'S04&W06', 'S06&E02', 'S06&E03', 'S06&E04', 'S06&E05', 'S06&E06', 'S06&S01', 'S06&S02', 'S06&S03', 'S06&S04', 'S06&W01', 'S06&W02', 'S06&W03', 'S06&W04', 'S06&W05', 'S06&W06', 'W01&E02', 'W01&E03', 'W01&E04', 'W01&E05', 'W01&E06', 'W01&S01', 'W01&S02', 'W01&S03', 'W01&S04', 'W01&S06', 'W01&W02', 'W01&W03', 'W01&W04', 'W01&W05', 'W01&W06', 'W02&E02', 'W02&E03', 'W02&E04', 'W02&E05', 'W02&E06', 'W02&S01', 'W02&S02', 'W02&S03', 'W02&S04', 'W02&S06', 'W02&W01', 'W02&W03', 'W02&W04', 'W02&W05', 'W02&W06', 'W03&E02', 'W03&E03', 'W03&E04', 'W03&E05', 'W03&E06', 'W03&S01', 'W03&S02', 'W03&S03', 'W03&S04', 'W03&S06', 'W03&W01', 'W03&W02', 'W03&W04', 'W03&W05', 'W03&W06', 'W04&E02', 'W04&E03', 'W04&E04', 'W04&E05', 'W04&E06', 'W04&S01', 'W04&S02', 'W04&S03', 'W04&S04', 'W04&S06', 'W04&W01', 'W04&W02', 'W04&W03', 'W04&W05', 'W04&W06', 'W05&E02', 'W05&E03', 'W05&E04', 'W05&E05', 'W05&E06', 'W05&S01', 'W05&S02', 'W05&S03', 'W05&S04', 'W05&S06', 'W05&W01', 'W05&W02', 'W05&W03', 'W05&W04', 'W05&W06', 'W06&E02', 'W06&E03', 'W06&E04', 'W06&E05', 'W06&E06', 'W06&S01', 'W06&S02', 'W06&S03', 'W06&S04', 'W06&S06', 'W06&W01', 'W06&W02', 'W06&W03', 'W06&W04', 'W06&W05']
 	myantrflag =[] 
 	myantrflag.append(str('; '.join(mylist)))
@@ -1193,6 +1228,8 @@ if doflagavg == True:
 #####################################
 
 if doselfcal == True:
+   for i in range(0,len(mytargets)):
+        mysplitavgfile = mytargets[i]+'avg-split.ms'
 	casalog.filter('INFO')
 	clearcal(vis = mysplitavgfile)
 	myfile2 = [mysplitavgfile]
