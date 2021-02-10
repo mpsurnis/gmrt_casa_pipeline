@@ -25,18 +25,18 @@
 ###### SET THE STAGE FOR DATA ANALYSIS #############################
 fromlta = False                               # If starting from lta file set it True. Provide the lta file name and check that the gvfits binaries are given properly.
 gvbinpath = ['./gvfits-binaries/listscan','./gvfits-binaries/gvfits']   # set the path to listscan and gvfits
-fromraw = True                               # True if starting from FITS data. Otherwise keep it False.
-fromms = True                                # True If working with multi-source MS file.
+fromraw = False                               # True if starting from FITS data. Otherwise keep it False.
+fromms = False                                # True If working with multi-source MS file.
 ######## find bad ants and freqs
-findbadants = True                           # find bad antennas when True
-flagbadants= True                            # find and flag bad antennas when True
-findbadchans = True                          # find bad channels within known RFI affected freq ranges when True
-flagbadfreq= True                            # find and flag bad channels within known RFI affected freq ranges when True
+findbadants = False                           # find bad antennas when True
+flagbadants= False                            # find and flag bad antennas when True
+findbadchans = False                          # find bad channels within known RFI affected freq ranges when True
+flagbadfreq= False                            # find and flag bad channels within known RFI affected freq ranges when True
 ###################
-myflaginit = True                             # True to flag first channel, quack, initial clips
-doinitcal = True                              # True to calibrate data
-mydoflag = True                               # True to flag on the calibrated data
-redocal = True                                # True to redo calibration - recommended
+myflaginit = False                             # True to flag first channel, quack, initial clips
+doinitcal = False                              # True to calibrate data
+mydoflag = False                               # True to flag on the calibrated data
+redocal = False                                # True to redo calibration - recommended
 ##################
 dosplit = True                                # True to split calibrated data on target source
 mysplitflag = True                            # True to flag on the target source
@@ -317,7 +317,8 @@ def myonlyclean(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj):
 def mysplit(myfile,srno):
 	default(mstransform)
 	mstransform(vis=myfile, field='0', spw='0', datacolumn='corrected', outputvis='vis-selfcal'+str(srno)+'.ms')
-	myoutvis='vis-selfcal'+str(srno)+'.ms'
+        templist = getfields(myfile)
+	myoutvis=templist[0]+'vis-selfcal'+str(srno)+'.ms'
 	return myoutvis
 
 
@@ -345,7 +346,8 @@ def mygaincal_ap(myfile,myref,mygtable,srno,pap,mysolint,myuvrascal,mygainspw):
 		uvrange=myuvrascal, solint = mysol, refant = myref, minsnr = 2.0, gaintype = 'G',
 		solnorm= mysolnorm, calmode = mycalmode, gaintable = [], interp = ['nearest,nearestflag', 'nearest,nearestflag' ], 
 		parang = True )
-	mycal = str(pap)+str(srno)+'.GT'
+        templist = getfields(myfile)
+	mycal = templist[0]+str(pap)+str(srno)+'.GT'
 	return mycal
 
 
@@ -1163,9 +1165,9 @@ if dosplit == True:
 			mypcals.append(myfields[i])
 		else:
 			mytargets.append(myfields[i])
-	for i in range(0,len(mytargets)):
-		os.system('rm -rf '+mytargets[i]+'split.ms')
-		mysplitfile = mysplitinit(myfile1,mytargets[i],gainspw,1)
+	#for i in range(0,len(mytargets)):
+		#os.system('rm -rf '+mytargets[i]+'split.ms')
+		#mysplitfile = mysplitinit(myfile1,mytargets[i],gainspw,1)
 
 #############################################################
 # Flagging on split file
