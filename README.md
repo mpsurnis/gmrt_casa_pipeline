@@ -34,10 +34,13 @@ There are many steps in using the pipeline on the data. Following is an example 
    cp /home/mpsurnis/gmrt_casa_pipeline/vla-cals.list .
 
 7. Now, we need to change a few parameters for the pipeline to work properly. They are as follows:
-   a. scaloops (line 75) which defaults to 5. That is usually enough. This is 4 phase only self cals plus one amplitude and phase self cal.
-   b. mycell (line 78) which defaults to 0.5 arcsec. That is the value for band4. For band3, change it to 1.0 arcsec. This is the value of the cell size for re-gridding the visibilities.
-   c. myimsize (line 79) which defaults to 9000 pixels. This is the final image size in pixels (square). This corresponds to a field size of about 0.7 deg at band4 and about 1.3 deg at band3.
-   d. uvrascal (line 86) which defaults to >2klambda. That is the value for band4. For band3, change it to >1klambda. This is a parameter to exclude the central square antennae while self-calibrating.
+   a. myminbeamfrac (line 53) which defaults to 0.3. This is good enough for most of the cases. Change it to 0.1 if there are less than 20 antennae in a subarray
+   b. mynpix (line 54) which defaults to 20. This is again, usually good enough if there is a point source at the phase centre. Make it larger for subarray observations with a larger beam size
+   c. nsub (line 56) which defaults to 4. This would be enough most of the times unless that source is stronger than a couple of hundred mJy :)
+   d. scaloops (line 75) which defaults to 5. That is usually enough. This is 4 phase only self cals plus one amplitude and phase self cal.
+   e. mycell (line 78) which defaults to 1.0 arcsec. That value is good for band4 and band3. For band4, change it to 0.5 arcsec if the need be. This is the value of the cell size for re-gridding the visibilities.
+   f. myimsize (line 79) which defaults to 5000 pixels. This is the final image size in pixels (square). This corresponds to a field size of about 1.38 deg. Make usre to give a sensible value based on mycell
+   g. uvrascal (line 86) which defaults to >2klambda. That is the value for band4. For band3, change it to >1klambda and for band5, change it to >5klambda. This is a parameter to exclude the central square antennae while self-calibrating. Leave this blank if there are ONLY central suqare antennae in the subarray.
 
 8. Now, we can run the pipeline. Just make sure that TEST.FITS, vla-cals.list and my-pipeline-V15-uf_mps_subband_stable.py are in your current working directory. To run the pipeline, just type:
 
