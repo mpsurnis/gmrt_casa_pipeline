@@ -1,5 +1,7 @@
 This repo contains the CASA-based imaging pipeline for uGMRT data. This is especially tuned to carry out imaging in subbands and estimate the flux density of the source at the phase centre.
 
+This is based on the original pipeline obtaned from Ruta and Ishwar which is hosted here: https://github.com/ruta-k/uGMRT-pipeline.git
+
 There are some parameters that need to be set-up and/or fine tuned in order to carry out imaging with the data acquired in different bands of the uGMRT.
 
 The subband_stable script is the latest working version and the mps_dev is the script under developement and testing.
