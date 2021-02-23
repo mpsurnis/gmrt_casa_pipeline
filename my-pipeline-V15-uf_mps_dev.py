@@ -51,7 +51,7 @@ makedirty = False                             # True only if you want to make a 
 doselfcal = True                              # True if selfcal loop should be run: set inputs below regarding how many iterations you want.
 usetclean = True                              # True if you want to use tclean (recommended); False will use clean.
 myminbeamfrac = 0.3                           # 0.1 if not all antennae are present, 0.3 otherwise
-npix = 20                                     # No of pixels for getting flux density. Put a bigger no for subarray with lower no of ants
+mynpix = 20                                     # No of pixels for getting flux density. Put a bigger no for subarray with lower no of ants
 dosubband = True                              # Added by MPS on 7 Sep 2020 to do subband imaging.
 nsub = 4                                      # Number fo subbands to make images over
 ####################################################################
@@ -354,7 +354,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                         myimgflx = myimg+'.image.tt0'
                         try:
-                            getfluxdensity(myimgflx,myimagesize,npix)
+                            getfluxdensity(myimgflx,myimagesize,mynpix)
                         except:
                             pass
 		exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
@@ -371,7 +371,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
-                                                    getfluxdensity(myimgflx,myimagesize,npix)
+                                                    getfluxdensity(myimgflx,myimagesize,mynpix)
                                                 except:
                                                     pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
@@ -389,7 +389,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
-                                                    getfluxdensity(myimgflx,myimagesize,npix)
+                                                    getfluxdensity(myimgflx,myimagesize,mynpix)
                                                 except:
                                                     pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
@@ -414,7 +414,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
-                                                    getfluxdensity(myimgflx,myimagesize,npix)
+                                                    getfluxdensity(myimgflx,myimagesize,mynpix)
                                                 except:
                                                     pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
@@ -458,7 +458,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                         myimgflx = myimg+'.image.tt0'
                         try:
-                            getfluxdensity(myimgflx,myimagesize,npix)
+                            getfluxdensity(myimgflx,myimagesize,mynpix)
                         except:
                             pass
 		exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
@@ -475,7 +475,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
-                                                    getfluxdensity(myimgflx,myimagesize,npix)
+                                                    getfluxdensity(myimgflx,myimagesize,mynpix)
                                                 except:
                                                     pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
@@ -493,7 +493,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
-                                                    getfluxdensity(myimgflx,myimagesize,npix)
+                                                    getfluxdensity(myimgflx,myimagesize,mynpix)
                                                 except:
                                                     pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
@@ -518,7 +518,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
-                                                    getfluxdensity(myimgflx,myimagesize,npix)
+                                                    getfluxdensity(myimgflx,myimagesize,mynpix)
                                                 except:
                                                     pass
 					exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')		
@@ -552,7 +552,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
                         myimg = mytcleansub(finalvis,myniter,mythresh,j,mycellsize,myimagesize,mynterms2,mywproj1,subchans,finalchans,nsub)
                         myimgflx = myimg+'.image.tt0'
                         try:
-                            getfluxdensity(myimgflx,myimsize,npix)
+                            getfluxdensity(myimgflx,myimsize,mynpix)
                         except:
                             pass
                     except:
@@ -581,7 +581,7 @@ def getfluxdensity(myimg,myimsize,npix):
     obs_freq = imcalcs['results']['component0']['spectrum']['frequency']['m0']['value']*1000
     outstr = "[RES] Integrated Flux density is: "+str(integ_flux)+" +/- "+str(integ_flux_err)+" mJy and"
     outstr1 = "Frequency is: "+str(obs_freq)+" MHz"
-    print 'Image name:',myimg
+    print '[RES] Image name:',myimg
     print outstr,outstr1
 
 def closest_chan(freq,freqarr):
