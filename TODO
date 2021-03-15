@@ -1,2 +1,3 @@
 1. Add capability to image multiple targets with the same phase cal : Done 19 Feb 2021
-2. Add capability to image multiple targets, each with their own phase cal
+2. Add capability to get information from the ms file to set defaults
+3. Add capability to image multiple targets, each with their own phase cal
