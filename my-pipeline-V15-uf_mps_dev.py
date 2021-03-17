@@ -68,6 +68,7 @@ myquackinterval = 10.0                        # time in s to flag at the beginni
 # calibration
 myrefant = 'E04'                              # choose a reference antenna - make sure it is one of the working antennas.
 uvracal =''                                   # Leave it to '' - should work in most cases
+uvraimag = ''
 # Clip levels for flagging : change depending on what you expect
 clipfluxcal =[0.0,60.0]                       # typically twice the expected flux; only to remove high points
 clipphasecal =[0.0,30.0]                      # typically twice the expected flux; only to remove high points
@@ -124,7 +125,6 @@ def getscans(msfile, mysrc):
 	msmd.done()
 	return myscanlist
 
-
 def getnchan(msfile):
 	msmd.open(msfile)
 	nchan = msmd.nchan(0)
@@ -138,6 +138,27 @@ def freq_info(ms_file):
 	msmd.done()
 	return freq									
 
+# MPS: Added a function to exclude the csq baselines based on MJD of obs
+def set_uvranges(msfile):
+        mjdstart = 58392.0
+        mjdend = 59186.0
+        msmd.open(msfile)
+        meanfrq = msmd.meanfreq(0)/1000000 #cent frq in MHz
+        mjd = mjd = msmd.timerangeforobs(obsid=0)['begin']['m0']['value']
+        if ((mjd < mjdend) and (mjd > mjdstart)):
+           print "The MJD falls in the csq issue range. Adjusting uv ranges ..."
+           if meanfrq < 510.0:
+              uvracal = '>1klambda'
+              uvraimag = '>1klambda'
+           elif meanfrq < 1000.0:
+              uvracal = '>2klambda'
+              uvraimag = '>2klambda'
+           else: 
+              uvracal = '>5klambda'
+              uvraimag = '>5klambda'
+        else:
+           print "The observation is free from the csq issue!"
+        
 def myvisstatampraw1(myfile,myfield,myspw,myant,mycorr,myscan):
 	mystat = visstat(vis=myfile,axis="amp",datacolumn="data",useflags=False,spw=myspw,
 		field=myfield,selectdata=True,antenna=myant,uvrange="",timerange="",
@@ -227,7 +248,7 @@ def mysplitavg(myfile,myfield,myspw,mywidth):
 	mstransform(vis=myfile, field=myfield, spw=myspw, chanaverage=True, chanbin=mywidth, datacolumn='data', outputvis=myoutname)
 	return myoutname
 
-def mytclean(myfile,myniter,mythresh,srno,cell,imsize, mynterms1,mywproj):    # you may change the multi-scale inputs as per your field
+def mytclean(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj,myuvrange):    # you may change the multi-scale inputs as per your field
 	if myniter==0:
 		myoutimg = 'dirty-img'
 	else:
@@ -236,14 +257,14 @@ def mytclean(myfile,myniter,mythresh,srno,cell,imsize, mynterms1,mywproj):    # 
 	default(tclean)
 	tclean(vis=myfile,
        		imagename=myoutimg, selectdata= True, field='0', spw='0', imsize=imsize, cell=cell, robust=0, weighting='briggs', 
-       		specmode='mfs',	nterms=mynterms1, niter=myniter, usemask='auto-multithresh',
+       		specmode='mfs',	nterms=mynterms1, uvrange = myuvrange, niter=myniter, usemask='auto-multithresh',
 		smallscalebias=0.6, threshold= mythresh, aterm =True, pblimit=-1,minbeamfrac=myminbeamfrac,
 	        deconvolver='mtmfs', gridder='widefield', wprojplanes=mywproj, scales=[0,10,25],wbawp=False,
 		restoration = True, savemodel='modelcolumn', cyclefactor = 0.5, parallel=False,
        		interactive=False)
 	return myoutimg
 
-def mytcleansub(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj,mychans,finalchan,nsub):    # you may change the multi-scale inputs as per your field
+def mytcleansub(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj,mychans,finalchan,nsub,myuvrange):    # you may change the multi-scale inputs as per your field
         templist = getfields(myfile)
 	myoutimg = templist[0]+'selfcal'+'img'+'sub'+str(srno)
         print myoutimg
@@ -259,7 +280,7 @@ def mytcleansub(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj,mycha
 	default(tclean)
 	tclean(vis=myfile,
        		imagename=myoutimg, selectdata= True, field='0', spw=spwopt, imsize=imsize, cell=cell, robust=0, weighting='briggs', 
-       		specmode='mfs',	nterms=mynterms1, niter=myniter, usemask='auto-multithresh',
+       		specmode='mfs',	nterms=mynterms1, uvrange = myuvrange, niter=myniter, usemask='auto-multithresh',
 		smallscalebias=0.6, threshold= mythresh, aterm =True, pblimit=-1,minbeamfrac=0.1,sidelobethreshold=2.5,
 	        deconvolver='mtmfs', gridder='widefield', wprojplanes=mywproj, scales=[0,10,25],wbawp=False,
 		restoration = True, savemodel='modelcolumn', cyclefactor = 0.5, parallel=False,
@@ -334,7 +355,7 @@ def flagresidual(myfile,myclipresid,myflagspw):
 	flagdata(vis=myfile,mode="summary",datacolumn="RESIDUAL_DATA", extendflags=False, 
 		name=myfile+'temp.summary', action="apply", flagbackup=True,overwrite=True, writeflags=True)
 
-def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty):
+def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty,myuvrange):
 	myref = myref
 	nscal = nloops # number of selfcal loops
 	npal = nploops # number of phasecal loops
@@ -351,7 +372,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 		if usetclean == False:
 			myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 		else:
-			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1,myuvrange)   # tclean
                         myimgflx = myimg+'.image.tt0'
                         try:
                             getfluxdensity(myimgflx,myimagesize,mynpix)
@@ -368,7 +389,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
-						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1,myuvrange)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
                                                     getfluxdensity(myimgflx,myimagesize,mynpix)
@@ -386,7 +407,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
-						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1,myuvrange)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
                                                     getfluxdensity(myimgflx,myimagesize,mynpix)
@@ -411,7 +432,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
-						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1,myuvrange)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
                                                     getfluxdensity(myimgflx,myimagesize,mynpix)
@@ -437,7 +458,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 			print 'Ran the selfcal loop'
 	return myfile, mygt, myimages
 
-def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty):
+def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty,myuvrange):
 	myref = myref
 	nscal = nloops # number of selfcal loops
 	npal = nploops # number of phasecal loops
@@ -455,7 +476,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 		if usetclean == False:
 			myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 		else:
-			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1,myuvrange)   # tclean
                         myimgflx = myimg+'.image.tt0'
                         try:
                             getfluxdensity(myimgflx,myimagesize,mynpix)
@@ -472,7 +493,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
-						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1,myuvrange)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
                                                     getfluxdensity(myimgflx,myimagesize,mynpix)
@@ -490,7 +511,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
-						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1,myuvrange)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
                                                     getfluxdensity(myimgflx,myimagesize,mynpix)
@@ -515,7 +536,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
-						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1,myuvrange)   # tclean
                                                 myimgflx = myimg+'.image.tt0'
                                                 try:
                                                     getfluxdensity(myimgflx,myimagesize,mynpix)
@@ -549,7 +570,7 @@ def myselfcalsubband(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
                 subchans = np.linspace(0,finalchans,nsub+1)
                 for j in range(nsub):
                     try:
-                        myimg = mytcleansub(finalvis,myniter,mythresh,j,mycellsize,myimagesize,mynterms2,mywproj1,subchans,finalchans,nsub)
+                        myimg = mytcleansub(finalvis,myniter,mythresh,j,mycellsize,myimagesize,mynterms2,mywproj1,subchans,finalchans,nsub,myuvrange)
                         myimgflx = myimg+'.image.tt0'
                         try:
                             getfluxdensity(myimgflx,myimsize,mynpix)
@@ -608,6 +629,9 @@ if fromraw == True:
 	myoutvis = myfile1
 	default(importgmrt)
 	importgmrt(fitsfile=myfitsfile, vis = myoutvis)
+        # Set uv ranges based on the dates for the csq baseline issue
+        print "Checking for obs dates and setting uv ranges ..."
+        set_uvranges(myfile1)
 	# create a dummy flagdata table
 	os.system("rm -rf dummy-flg.dat")
 	default(flagdata)
@@ -874,7 +898,7 @@ if doinitcal == True:
 # Delay calibration  using the first flux calibrator in the list - should depend on which is less flagged
 	os.system('rm -rf '+str(myfile1)+'.K1')
 	gaincal(vis=myfile1, caltable=str(myfile1)+'.K1', spw =flagspw, field=myampcals[0], 
-		solint='60s', refant=myrefant,	solnorm= True, gaintype='K', gaintable=[], parang=True)
+		solint='60s', refant=myrefant, uvrange=uvracal,	solnorm= True, gaintype='K', gaintable=[], parang=True)
 	kcorrfield =myampcals[0]
 	print 'wrote table',str(myfile1)+'.K1'
 
@@ -882,11 +906,11 @@ if doinitcal == True:
 	os.system('rm -rf '+str(myfile1)+'.AP.G0')
 	default(gaincal)
 	gaincal(vis=myfile1, caltable=str(myfile1)+'.AP.G0', append=True, field=str(','.join(mybpcals)), 
-		spw =flagspw, solint = 'int', refant = myrefant, minsnr = 2.0, gaintype = 'G', calmode = 'ap', gaintable = [str(myfile1)+'.K1'],
+		spw =flagspw, solint = 'int', refant = myrefant, uvrange=uvracal, minsnr = 2.0, gaintype = 'G', calmode = 'ap', gaintable = [str(myfile1)+'.K1'],
 		interp = ['nearest,nearestflag', 'nearest,nearestflag' ], parang = True)
 	os.system('rm -rf '+str(myfile1)+'.B1')
 	default(bandpass)
-	bandpass(vis=myfile1, caltable=str(myfile1)+'.B1', spw =flagspw, field=str(','.join(mybpcals)), solint='inf', refant=myrefant, solnorm = True,
+	bandpass(vis=myfile1, caltable=str(myfile1)+'.B1', spw =flagspw, field=str(','.join(mybpcals)), solint='inf', refant=myrefant, uvrange=uvracal, solnorm = True,
 		minsnr=2.0, fillgaps=8, parang = True, gaintable=[str(myfile1)+'.K1',str(myfile1)+'.AP.G0'], interp=['nearest,nearestflag','nearest,nearestflag'])
 
 # do a gaingal on alll calibrators
@@ -1027,18 +1051,18 @@ if redocal == True:
 # Delay calibration  using the first flux calibrator in the list - should depend on which is less flagged
 	os.system('rm -rf '+str(myfile1)+'.K1'+'recal')
 	gaincal(vis=myfile1, caltable=str(myfile1)+'.K1'+'recal', spw =flagspw, field=myampcals[0], 
-		solint='60s', refant=myrefant,	solnorm= True, gaintype='K', gaintable=[], parang=True)
+		solint='60s', refant=myrefant,uvrange=uvracal,	solnorm= True, gaintype='K', gaintable=[], parang=True)
 	print 'wrote table',str(myfile1)+'.K1'+'recal'
 
 # an initial bandpass
 	os.system('rm -rf '+str(myfile1)+'.AP.G0'+'recal')
 	default(gaincal)
 	gaincal(vis=myfile1, caltable=str(myfile1)+'.AP.G0'+'recal', append=True, field=str(','.join(mybpcals)), 
-		spw =flagspw, solint = 'int', refant = myrefant, minsnr = 2.0, gaintype = 'G', calmode = 'ap', gaintable = [str(myfile1)+'.K1'],
+		spw =flagspw, solint = 'int', refant = myrefant, uvrange=uvracal, minsnr = 2.0, gaintype = 'G', calmode = 'ap', gaintable = [str(myfile1)+'.K1'],
 		interp = ['nearest,nearestflag', 'nearest,nearestflag' ], parang = True )
 	os.system('rm -rf '+str(myfile1)+'.B1'+'recal')
 	default(bandpass)
-	bandpass(vis=myfile1, caltable=str(myfile1)+'.B1'+'recal', spw =flagspw, field=str(','.join(mybpcals)), solint='inf', refant=myrefant, solnorm = True,
+	bandpass(vis=myfile1, caltable=str(myfile1)+'.B1'+'recal', spw =flagspw, field=str(','.join(mybpcals)), solint='inf', refant=myrefant, uvrange=uvracal, solnorm = True,
 		minsnr=2.0,  fillgaps=8, parang = True, gaintable=[str(myfile1)+'.K1',str(myfile1)+'.AP.G0'], interp=['nearest,nearestflag','nearest,nearestflag'])
 
 # do a gaingal on alll calibrators
@@ -1160,6 +1184,6 @@ if doselfcal == True:
 	myfile2 = [mysplitavgfile]
 	if usetclean == True:
            if dosubband == True:
-		myselfcalsubband(myfile2,myrefant,scaloops,mypcaloops,mythresholds,mycell,myimsize,mynterms,mywproj2,mysolint2,clipresid,'','',makedirty)
+		myselfcalsubband(myfile2,myrefant,scaloops,mypcaloops,mythresholds,mycell,myimsize,mynterms,mywproj2,mysolint2,clipresid,'','',makedirty,uvraimag)
            else:
-		myselfcal(myfile2,myrefant,scaloops,mypcaloops,mythresholds,mycell,myimsize,mynterms,mywproj2,mysolint2,clipresid,'','',makedirty)
+		myselfcal(myfile2,myrefant,scaloops,mypcaloops,mythresholds,mycell,myimsize,mynterms,mywproj2,mysolint2,clipresid,'','',makedirty,uvraimag)
